@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Nomes - Métodos de Arrays</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border-left: 5px solid #007bff;
+        }
+        .section h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .btn-push {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .btn-filter {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+        .btn-find {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+        .btn-map {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+            color: white;
+        }
+        .btn-every {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+        .btn-interactive {
+            background: linear-gradient(45deg, #607D8B, #455A64);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        .names-display {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 2px solid #333;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        .method-info {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .current-names {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .current-names h4 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .name-item {
+            display: inline-block;
+            background: white;
+            padding: 8px 12px;
+            margin: 3px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Gerenciador de Nomes</h1>
+        <p class="subtitle">Demonstração de Métodos Auxiliares de Arrays</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalNames">0</span>
+                <span>Total de Nomes</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="averageLength">0</span>
+                <span>Média de Caracteres</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="longestName">0</span>
+                <span>Nome Mais Longo</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="uniqueLetters">0</span>
+                <span>Letras Iniciais</span>
+            </div>
+        </div>
+
+        <div class="current-names">
+            <h4>📋 Lista Atual de Nomes:</h4>
+            <div id="namesList">Nenhum nome adicionado ainda...</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-push" onclick="demonstrarPush()">
+                ➕ push()<br><small>Adicionar Nome</small>
+            </button>
+            <button class="btn-filter" onclick="demonstrarFilter()">
+                🔍 filter()<br><small>Filtrar Nomes</small>
+            </button>
+            <button class="btn-find" onclick="demonstrarFind()">
+                🎯 find()<br><small>Buscar Nome</small>
+            </button>
+            <button class="btn-map" onclick="demonstrarMap()">
+                🔄 map()<br><small>Transformar</small>
+            </button>
+            <button class="btn-every" onclick="demonstrarEvery()">
+                ✅ every()<br><small>Verificar Condição</small>
+            </button>
+            <button class="btn-interactive" onclick="iniciarModoInterativo()">
+                🚀 Modo Interativo Completo (While Loop)
+            </button>
+        </div>
+
+        <div class="names-display" id="output">
+            === CONSOLE DE SAÍDA ===<br>
+            Clique nos botões para demonstrar os métodos de arrays...<br>
+        </div>
+    </div>
+
+    <script>
+        // Array para armazenar os nomes
+        let nomes = [];
+        
+        // Função para log na página e console
+        function logOutput(message) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML += message + '<br>';
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Função para limpar o output
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '=== CONSOLE DE SAÍDA ===<br>';
+        }
+        
+        // Função para atualizar a exibição dos nomes
+        function atualizarExibicaoNomes() {
+            const namesDiv = document.getElementById('namesList');
+            
+            if (nomes.length === 0) {
+                namesDiv.innerHTML = 'Nenhum nome adicionado ainda...';
+                return;
+            }
+            
+            let html = '';
+            nomes.forEach((nome, index) => {
+                html += `<span class="name-item">${index}: ${nome}</span>`;
+            });
+            
+            namesDiv.innerHTML = html;
+        }
+        
+        // Função para atualizar estatísticas
+        function atualizarStats() {
+            const total = nomes.length;
+            const mediaLength = total > 0 ? Math.round(nomes.reduce((acc, nome) => acc + nome.length, 0) / total) : 0;
+            const nomesMaisLongo = total > 0 ? Math.max(...nomes.map(nome => nome.length)) : 0;
+            const letrasIniciais = total > 0 ? new Set(nomes.map(nome => nome[0].toLowerCase())).size : 0;
+            
+            document.getElementById('totalNames').textContent = total;
+            document.getElementById('averageLength').textContent = mediaLength;
+            document.getElementById('longestName').textContent = nomesMaisLongo;
+            document.getElementById('uniqueLetters').textContent = letrasIniciais;
+        }
+        
+        // ==============================================
+        // 1. MÉTODO PUSH() - Adicionar Nomes
+        // ==============================================
+        
+        function demonstrarPush() {
+            clearOutput();
+            logOutput('=== DEMONSTRAÇÃO: MÉTODO push() ===');
+            logOutput('');
+            logOutput('📝 O método push() adiciona um ou mais elementos ao final do array');
+            logOutput('   Sintaxe: array.push(elemento1, elemento2, ...)');
+            logOutput('');
+            
+            const nome = prompt('Digite um nome para adicionar à lista:');
+            
+            if (nome === null) {
+                logOutput('❌ Operação cancelada pelo usuário');
+                return;
+            }
+            
+            if (nome.trim() === '') {
+                logOutput('❌ Erro: Nome não pode estar vazio');
+                return;
+            }
+            
+            // Verifica se o nome já existe
+            if (nomes.includes(nome.trim())) {
+                logOutput(`❌ Erro: Nome "${nome.trim()}" já existe na lista`);
+                return;
+            }
+            
+            logOutput(`Adicionando "${nome.trim()}" à lista...`);
+            logOutput(`Lista antes: [${nomes.join(', ')}]`);
+            
+            // Usa o método push() para adicionar o nome
+            const novoTamanho = nomes.push(nome.trim());
+            
+            logOutput(`✅ push() executado com sucesso!`);
+            logOutput(`Lista depois: [${nomes.join(', ')}]`);
+            logOutput(`Novo tamanho do array: ${novoTamanho}`);
+            logOutput(`Índice do novo elemento: ${nomes.length - 1}`);
+            
+            atualizarExibicaoNomes();
+            atualizarStats();
+        }
+        
+        // ==============================================
+        // 2. MÉTODO FILTER() - Filtrar Nomes
+        // ==============================================
+        
+        function demonstrarFilter() {
+            clearOutput();
+            logOutput('=== DEMONSTRAÇÃO: MÉTODO filter() ===');
+            logOutput('');
+            logOutput('🔍 O método filter() cria um novo array com elementos que passam no teste');
+            logOutput('   Sintaxe: array.filter(callback)');
+            logOutput('');
+            
+            if (nomes.length === 0) {
+                logOutput('❌ Erro: Lista vazia! Adicione alguns nomes primeiro.');
+                return;
+            }
+            
+            logOutput(`Lista atual: [${nomes.join(', ')}]`);
+            logOutput('');
+            
+            const letra = prompt('Digite uma letra para filtrar nomes que começam com ela:');
+            
+            if (letra === null) {
+                logOutput('❌ Operação cancelada pelo usuário');
+                return;
+            }
+            
+            if (letra.trim() === '' || letra.length !== 1) {
+                logOutput('❌ Erro: Digite apenas uma letra');
+                return;
+            }
+            
+            logOutput(`Filtrando nomes que começam com "${letra.toUpperCase()}"...`);
+            
+            // Usa o método filter() para filtrar nomes
+            const nomesFiltrados = nomes.filter(nome => 
+                nome.toLowerCase().startsWith(letra.toLowerCase())
+            );
+            
+            logOutput(`✅ filter() executado com sucesso!`);
+            logOutput(`Nomes encontrados: ${nomesFiltrados.length}`);
+            
+            if (nomesFiltrados.length > 0) {
+                logOutput('📋 Resultado da filtragem:');
+                nomesFiltrados.forEach((nome, index) => {
+                    logOutput(`   ${index}: ${nome}`);
+                });
+            } else {
+                logOutput(`❌ Nenhum nome encontrado que comece com "${letra.toUpperCase()}"`);
+            }
+            
+            // Mostra também outras letras disponíveis
+            const letrasDisponiveis = [...new Set(nomes.map(nome => nome[0].toUpperCase()))].sort();
+            logOutput(`💡 Letras disponíveis: ${letrasDisponiveis.join(', ')}`);
+        }
+        
+        // ==============================================
+        // 3. MÉTODO FIND() - Buscar Nome Específico
+        // ==============================================
+        
+        function demonstrarFind() {
+            clearOutput();
+            logOutput('=== DEMONSTRAÇÃO: MÉTODO find() ===');
+            logOutput('');
+            logOutput('🎯 O método find() retorna o primeiro elemento que satisfaz a condição');
+            logOutput('   Sintaxe: array.find(callback)');
+            logOutput('');
+            
+            if (nomes.length === 0) {
+                logOutput('❌ Erro: Lista vazia! Adicione alguns nomes primeiro.');
+                return;
+            }
+            
+            logOutput(`Lista atual: [${nomes.join(', ')}]`);
+            logOutput('');
+            
+            const nomeBusca = prompt('Digite o nome que deseja buscar:');
+            
+            if (nomeBusca === null) {
+                logOutput('❌ Operação cancelada pelo usuário');
+                return;
+            }
+            
+            if (nomeBusca.trim() === '') {
+                logOutput('❌ Erro: Digite um nome válido para buscar');
+                return;
+            }
+            
+            logOutput(`Buscando por "${nomeBusca.trim()}"...`);
+            
+            // Usa o método find() para buscar o nome (busca exata)
+            const nomeEncontrado = nomes.find(nome => 
+                nome.toLowerCase() === nomeBusca.trim().toLowerCase()
+            );
+            
+            logOutput(`✅ find() executado com sucesso!`);
+            
+            if (nomeEncontrado) {
+                const indice = nomes.indexOf(nomeEncontrado);
+                logOutput(`🎉 Nome encontrado: "${nomeEncontrado}"`);
+                logOutput(`📍 Posição na lista: ${indice}`);
+                logOutput(`📊 Tamanho do nome: ${nomeEncontrado.length} caracteres`);
+            } else {
+                logOutput(`❌ Nome "${nomeBusca.trim()}" não foi encontrado na lista`);
+                
+                // Busca parcial para sugestões
+                const sugestoes = nomes.filter(nome => 
+                    nome.toLowerCase().includes(nomeBusca.trim().toLowerCase())
+                );
+                
+                if (sugestoes.length > 0) {
+                    logOutput('💡 Nomes similares encontrados:');
+                    sugestoes.forEach(nome => logOutput(`   - ${nome}`));
+                }
+            }
+        }
+        
+        // ==============================================
+        // 4. MÉTODO MAP() - Transformar Nomes
+        // ==============================================
+        
+        function demonstrarMap() {
+            clearOutput();
+            logOutput('=== DEMONSTRAÇÃO: MÉTODO map() ===');
+            logOutput('');
+            logOutput('🔄 O método map() cria um novo array transformando cada elemento');
+            logOutput('   Sintaxe: array.map(callback)');
+            logOutput('');
+            
+            if (nomes.length === 0) {
+                logOutput('❌ Erro: Lista vazia! Adicione alguns nomes primeiro.');
+                return;
+            }
+            
+            logOutput(`Lista original: [${nomes.join(', ')}]`);
+            logOutput('');
+            
+            const transformacao = prompt(`
+Escolha uma transformação:
+1 - Converter para MAIÚSCULAS
+2 - Converter para minúsculas
+3 - Primeira letra maiúscula
+4 - Adicionar numeração
+5 - Adicionar tamanho do nome
+
+Digite o número:`);
+            
+            if (transformacao === null) {
+                logOutput('❌ Operação cancelada pelo usuário');
+                return;
+            }
+            
+            let nomesTransformados;
+            let descricaoTransformacao;
+            
+            switch(transformacao) {
+                case '1':
+                    // Transforma todos os nomes em maiúsculas
+                    nomesTransformados = nomes.map(nome => nome.toUpperCase());
+                    descricaoTransformacao = 'Convertendo para MAIÚSCULAS';
+                    break;
+                    
+                case '2':
+                    nomesTransformados = nomes.map(nome => nome.toLowerCase());
+                    descricaoTransformacao = 'Convertendo para minúsculas';
+                    break;
+                    
+                case '3':
+                    nomesTransformados = nomes.map(nome => 
+                        nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase()
+                    );
+                    descricaoTransformacao = 'Primeira letra maiúscula';
+                    break;
+                    
+                case '4':
+                    nomesTransformados = nomes.map((nome, index) => `${index + 1}. ${nome}`);
+                    descricaoTransformacao = 'Adicionando numeração';
+                    break;
+                    
+                case '5':
+                    nomesTransformados = nomes.map(nome => `${nome} (${nome.length} chars)`);
+                    descricaoTransformacao = 'Adicionando tamanho do nome';
+                    break;
+                    
+                default:
+                    logOutput('❌ Opção inválida');
+                    return;
+            }
+            
+            logOutput(`🔄 ${descricaoTransformacao}...`);
+            logOutput(`✅ map() executado com sucesso!`);
+            logOutput('');
+            logOutput('📋 Resultado da transformação:');
+            
+            nomesTransformados.forEach((nome, index) => {
+                logOutput(`   ${index}: ${nome}`);
+            });
+            
+            logOutput('');
+            logOutput('💡 Nota: O array original não foi modificado!');
+            logOutput(`   Original: [${nomes.join(', ')}]`);
+        }
+        
+        // ==============================================
+        // 5. MÉTODO EVERY() - Verificar Condições
+        // ==============================================
+        
+        function demonstrarEvery() {
+            clearOutput();
+            logOutput('=== DEMONSTRAÇÃO: MÉTODO every() ===');
+            logOutput('');
+            logOutput('✅ O método every() testa se todos os elementos passam na condição');
+            logOutput('   Sintaxe: array.every(callback)');
+            logOutput('   Retorna: true se TODOS passarem, false caso contrário');
+            logOutput('');
+            
+            if (nomes.length === 0) {
+                logOutput('❌ Erro: Lista vazia! Adicione alguns nomes primeiro.');
+                return;
+            }
+            
+            logOutput(`Lista atual: [${nomes.join(', ')}]`);
+            logOutput('');
+            
+            const verificacao = prompt(`
+Escolha uma verificação:
+1 - Todos têm mais de 3 caracteres
+2 - Todos começam com letra maiúscula
+3 - Todos contêm apenas letras
+4 - Todos têm tamanho par
+5 - Verificação personalizada
+
+Digite o número:`);
+            
+            if (verificacao === null) {
+                logOutput('❌ Operação cancelada pelo usuário');
+                return;
+            }
+            
+            let resultado;
+            let descricaoTeste;
+            let detalhes = [];
+            
+            switch(verificacao) {
+                case '1':
+                    resultado = nomes.every(nome => nome.length > 3);
+                    descricaoTeste = 'todos os nomes têm mais de 3 caracteres';
+                    nomes.forEach(nome => {
+                        detalhes.push(`   ${nome}: ${nome.length} chars ${nome.length > 3 ? '✅' : '❌'}`);
+                    });
+                    break;
+                    
+                case '2':
+                    resultado = nomes.every(nome => nome[0] === nome[0].toUpperCase());
+                    descricaoTeste = 'todos os nomes começam com letra maiúscula';
+                    nomes.forEach(nome => {
+                        const isMaiuscula = nome[0] === nome[0].toUpperCase();
+                        detalhes.push(`   ${nome}: primeira letra '${nome[0]}' ${isMaiuscula ? '✅' : '❌'}`);
+                    });
+                    break;
+                    
+                case '3':
+                    resultado = nomes.every(nome => /^[a-zA-ZÀ-ÿ\s]+$/.test(nome));
+                    descricaoTeste = 'todos os nomes contêm apenas letras';
+                    nomes.forEach(nome => {
+                        const apenasLetras = /^[a-zA-ZÀ-ÿ\s]+$/.test(nome);
+                        detalhes.push(`   ${nome}: ${apenasLetras ? '✅' : '❌'}`);
+                    });
+                    break;
+                    
+                case '4':
+                    resultado = nomes.every(nome => nome.length % 2 === 0);
+                    descricaoTeste = 'todos os nomes têm tamanho par';
+                    nomes.forEach(nome => {
+                        const tamanhoPar = nome.length % 2 === 0;
+                        detalhes.push(`   ${nome}: ${nome.length} chars ${tamanhoParPar ? '✅' : '❌'}`);
+                    });
+                    break;
+                    
+                case '5':
+                    const minimo = prompt('Digite o número mínimo de caracteres:');
+                    if (minimo === null || isNaN(minimo)) {
+                        logOutput('❌ Número inválido');
+                        return;
+                    }
+                    const minimoNum = parseInt(minimo);
+                    resultado = nomes.every(nome => nome.length >= minimoNum);
+                    descricaoTeste = `todos os nomes têm pelo menos ${minimoNum} caracteres`;
+                    nomes.forEach(nome => {
+                        const atendeCritério = nome.length >= minimoNum;
+                        detalhes.push(`   ${nome}: ${nome.length} chars ${atendeCritério ? '✅' : '❌'}`);
+                    });
+                    break;
+                    
+                default:
+                    logOutput('❌ Opção inválida');
+                    return;
+            }
+            
+            logOutput(`🔍 Verificando se ${descricaoTeste}...`);
+            logOutput(`✅ every() executado com sucesso!`);
+            logOutput('');
+            logOutput(`📊 Resultado: ${resultado ? 'TRUE' : 'FALSE'}`);
+            logOutput(`${resultado ? '✅' : '❌'} ${resultado ? 'TODOS' : 'NEM TODOS'} os nomes atendem ao critério`);
+            logOutput('');
+            logOutput('📋 Detalhamento por nome:');
+            detalhes.forEach(detalhe => logOutput(detalhe));
+        }
+        
+        // ==============================================
+        // 6. MODO INTERATIVO COMPLETO (WHILE LOOP)
+        // ==============================================
+        
+        function iniciarModoInterativo() {
+            clearOutput();
+            logOutput('🚀 INICIANDO MODO INTERATIVO COMPLETO');
+            logOutput('Utilizando loop while para interação contínua...');
+            logOutput('');
+            
+            // Loop while para interação contínua
+            while (true) {
+                const opcao = prompt(`
+📝 GERENCIADOR DE NOMES - MODO INTERATIVO
+
+Lista atual: [${nomes.join(', ')}]
+Total de nomes: ${nomes.length}
+
+Escolha uma operação:
+1 - Adicionar nome (push)
+2 - Filtrar nomes (filter)
+3 - Buscar nome (find)
+4 - Transformar nomes (map)
+5 - Verificar condição (every)
+6 - Remover nome
+7 - Limpar lista
+8 - Estatísticas detalhadas
+9 - Sair
+
+Digite o número da opção:`);
+                
+                if (opcao === null || opcao === '9') {
+                    logOutput('👋 Saindo do modo interativo...');
+                    break;
+                }
+                
+                switch(opcao) {
+                    case '1':
+                        const novoNome = prompt('Digite o nome para adicionar:');
+                        if (novoNome && novoNome.trim() !== '' && !nomes.includes(novoNome.trim())) {
+                            nomes.push(novoNome.trim());
+                            logOutput(`✅ Nome "${novoNome.trim()}" adicionado com push()`);
+                            atualizarExibicaoNomes();
+                            atualizarStats();
+                        } else if (novoNome !== null) {
+                            logOutput('❌ Nome inválido ou já existe');
+                        }
+                        break;
+                        
+                    case '2':
+                        if (nomes.length === 0) {
+                            alert('Lista vazia!');
+                            break;
+                        }
+                        const letraFiltro = prompt('Digite uma letra para filtrar:');
+                        if (letraFiltro && letraFiltro.length === 1) {
+                            const filtrados = nomes.filter(nome => 
+                                nome.toLowerCase().startsWith(letraFiltro.toLowerCase())
+                            );
+                            logOutput(`🔍 filter(): Nomes com "${letraFiltro.toUpperCase()}": [${filtrados.join(', ')}]`);
+                        }
+                        break;
+                        
+                    case '3':
+                        if (nomes.length === 0) {
+                            alert('Lista vazia!');
+                            break;
+                        }
+                        const nomeBuscar = prompt('Digite o nome para buscar:');
+                        if (nomeBuscar) {
+                            const encontrado = nomes.find(nome => 
+                                nome.toLowerCase() === nomeBuscar.toLowerCase()
+                            );
+                            logOutput(`🎯 find(): ${encontrado ? `Encontrado: "${encontrado}"` : 'Nome não encontrado'}`);
+                        }
+                        break;
+                        
+                    case '4':
+                        if (nomes.length === 0) {
+                            alert('Lista vazia!');
+                            break;
+                        }
+                        const maiusculas = nomes.map(nome => nome.toUpperCase());
+                        logOutput(`🔄 map(): Nomes em maiúsculas: [${maiusculas.join(', ')}]`);
+                        break;
+                        
+                    case '5':
+                        if (nomes.length === 0) {
+                            alert('Lista vazia!');
+                            break;
+                        }
+                        const todosMaisDeTres = nomes.every(nome => nome.length > 3);
+                        logOutput(`✅ every(): Todos têm mais de 3 caracteres? ${todosMaisDeTres ? 'SIM' : 'NÃO'}`);
+                        break;
+                        
+                    case '6':
+                        if (nomes.length === 0) {
+                            alert('Lista vazia!');
+                            break;
+                        }
+                        const nomeRemover = prompt(`Nomes: ${nomes.join(', ')}\n\nDigite o nome para remover:`);
+                        if (nomeRemover) {
+                            const indice = nomes.indexOf(nomeRemover);
+                            if (indice !== -1) {
+                                nomes.splice(indice, 1);
+                                logOutput(`🗑️ Nome "${nomeRemover}" removido`);
+                                atualizarExibicaoNomes();
+                                atualizarStats();
+                            } else {
+                                logOutput('❌ Nome não encontrado');
+                            }
+                        }
+                        break;
+                        
+                    case '7':
+                        if (nomes.length > 0) {
+                            const confirmar = confirm(`Limpar todos os ${nomes.length} nomes?`);
+                            if (confirmar) {
+                                nomes = [];
+                                logOutput('🧹 Lista limpa');
+                                atualizarExibicaoNomes();
+                                atualizarStats();
+                            }
+                        } else {
+                            alert('Lista já está vazia!');
+                        }
+                        break;
+                        
+                    case '8':
+                        if (nomes.length === 0) {
+                            logOutput('📊 Lista vazia - sem estatísticas');
+                        } else {
+                            logOutput('📊 ESTATÍSTICAS DETALHADAS:');
+                            logOutput(`   Total: ${nomes.length} nomes`);
+                            logOutput(`   Maior nome: "${nomes.reduce((a, b) => a.length > b.length ? a : b)}"`);
+                            logOutput(`   Menor nome: "${nomes.reduce((a, b) => a.length < b.length ? a : b)}"`);
+                            const letras = [...new Set(nomes.map(n => n[0].toUpperCase()))].sort();
+                            logOutput(`   Letras iniciais: ${letras.join(', ')}`);
+                        }
+                        break;
+                        
+                    default:
+                        alert('Opção inválida! Digite um número de 1 a 9.');
+                }
+            }
+            
+            logOutput('✨ Modo interativo finalizado');
+        }
+        
+        // ==============================================
+        // INICIALIZAÇÃO
+        // ==============================================
+        
+        window.onload = function() {
+            atualizarExibicaoNomes();
+            atualizarStats();
+            
+            logOutput('=== GERENCIADOR DE NOMES INICIADO ===');
+            logOutput('');
+            logOutput('📚 Métodos de array demonstrados:');
+            logOutput('   • push() - Adicionar elementos');
+            logOutput('   • filter() - Filtrar elementos');
+            logOutput('   • find() - Encontrar elemento');
+            logOutput('   • map() - Transformar elementos');
+            logOutput('   • every() - Verificar condições');
+            logOutput('');
+            logOutput('💡 Dica: Adicione alguns nomes primeiro para testar os métodos!');
+            logOutput('');
+
+            console.log('=== GERENCIADOR DE NOMES CARREGADO ===');
+            console.log('Métodos disponíveis: push, filter, find, map, every');
+        };
+    </script>
+</body>
+</html>
