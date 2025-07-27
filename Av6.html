@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Tarefas - Funções JavaScript</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border-left: 5px solid #007bff;
+        }
+        .section h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .btn-anonymous {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .btn-arrow {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+        .btn-callback {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+        .btn-interactive {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #333;
+        }
+        .function-demo {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        .code-example {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Gerenciador de Tarefas</h1>
+        <p class="subtitle">Demonstração de Funções Anônimas, Arrow Functions e Callbacks</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalTasks">0</span>
+                <span>Total</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="completedTasks">0</span>
+                <span>Concluídas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="pendingTasks">0</span>
+                <span>Pendentes</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>💡 Conceitos Demonstrados</h3>
+            <div class="code-example">
+                <strong>Função Anônima:</strong> function() { ... } atribuída a uma variável<br>
+                <strong>Arrow Function:</strong> () => { ... } sintaxe mais concisa<br>
+                <strong>Callback Function:</strong> Função passada como parâmetro para outra função
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-anonymous" onclick="demonstrarFuncaoAnonima()">
+                📝 Função Anônima<br><small>Adicionar Tarefa</small>
+            </button>
+            <button class="btn-arrow" onclick="demonstrarArrowFunction()">
+                🏹 Arrow Function<br><small>Listar Tarefas</small>
+            </button>
+            <button class="btn-callback" onclick="demonstrarCallback()">
+                🔄 Callback Function<br><small>Operações</small>
+            </button>
+            <button class="btn-interactive" onclick="iniciarModoInterativo()">
+                🚀 Modo Interativo Completo
+            </button>
+        </div>
+
+        <div class="console-output" id="consoleOutput">
+            === CONSOLE DE SAÍDA ===<br>
+            Clique nos botões para ver as demonstrações...<br>
+        </div>
+    </div>
+
+    <script>
+        // Array para armazenar as tarefas
+        let tarefas = [];
+        
+        // Função para atualizar o console na página
+        function logToPage(message) {
+            const consoleDiv = document.getElementById('consoleOutput');
+            consoleDiv.innerHTML += message + '<br>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message); // Também loga no console real
+        }
+        
+        // Função para limpar o console da página
+        function clearPageConsole() {
+            document.getElementById('consoleOutput').innerHTML = '=== CONSOLE DE SAÍDA ===<br>';
+        }
+        
+        // Função para atualizar estatísticas
+        function atualizarStats() {
+            const total = tarefas.length;
+            const concluidas = tarefas.filter(t => t.status === 'concluida').length;
+            const pendentes = total - concluidas;
+            
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = concluidas;
+            document.getElementById('pendingTasks').textContent = pendentes;
+        }
+        
+        // ==============================================
+        // 1. FUNÇÃO ANÔNIMA - Adicionar Tarefas
+        // ==============================================
+        
+        // Função anônima atribuída a uma variável
+        const adicionarTarefa = function(nomeTarefa) {
+            if (!nomeTarefa || nomeTarefa.trim() === '') {
+                logToPage('❌ Erro: Nome da tarefa não pode estar vazio');
+                return false;
+            }
+            
+            // Verifica se a tarefa já existe
+            const tarefaExistente = tarefas.find(t => t.nome.toLowerCase() === nomeTarefa.toLowerCase());
+            if (tarefaExistente) {
+                logToPage('❌ Erro: Tarefa já existe na lista');
+                return false;
+            }
+            
+            const novaTarefa = {
+                id: Date.now(),
+                nome: nomeTarefa,
+                status: 'pendente',
+                criadaEm: new Date().toLocaleString()
+            };
+            
+            tarefas.push(novaTarefa);
+            logToPage(`✅ FUNÇÃO ANÔNIMA: Tarefa "${nomeTarefa}" adicionada com sucesso!`);
+            logToPage(`   ID: ${novaTarefa.id}, Status: ${novaTarefa.status}`);
+            atualizarStats();
+            return true;
+        };
+        
+        function demonstrarFuncaoAnonima() {
+            clearPageConsole();
+            logToPage('=== DEMONSTRAÇÃO: FUNÇÃO ANÔNIMA ===');
+            logToPage('');
+            logToPage('📝 Função anônima para adicionar tarefas:');
+            logToPage('const adicionarTarefa = function(nomeTarefa) { ... }');
+            logToPage('');
+            
+            const nomeTarefa = prompt('Digite o nome da nova tarefa:');
+            if (nomeTarefa !== null) {
+                adicionarTarefa(nomeTarefa);
+            }
+        }
+        
+        // ==============================================
+        // 2. ARROW FUNCTION - Listar Tarefas
+        // ==============================================
+        
+        // Arrow function para listar todas as tarefas
+        const listarTarefas = () => {
+            logToPage('=== DEMONSTRAÇÃO: ARROW FUNCTION ===');
+            logToPage('');
+            logToPage('🏹 Arrow function para listar tarefas:');
+            logToPage('const listarTarefas = () => { ... }');
+            logToPage('');
+            
+            if (tarefas.length === 0) {
+                logToPage('📋 Lista de tarefas vazia');
+                return;
+            }
+            
+            logToPage('📋 LISTA DE TAREFAS:');
+            logToPage('==================');
+            
+            // Arrow function para processar cada tarefa
+            tarefas.forEach((tarefa, index) => {
+                const statusIcon = tarefa.status === 'concluida' ? '✅' : '⏳';
+                logToPage(`${index}: ${statusIcon} ${tarefa.nome} (${tarefa.status})`);
+            });
+            
+            logToPage('==================');
+            logToPage(`Total: ${tarefas.length} tarefas`);
+        };
+        
+        function demonstrarArrowFunction() {
+            clearPageConsole();
+            listarTarefas();
+        }
+        
+        // ==============================================
+        // 3. CALLBACK FUNCTIONS - Operações com Tarefas
+        // ==============================================
+        
+        // Função principal que recebe callbacks
+        const executarOperacao = (operacao, callback) => {
+            logToPage('=== DEMONSTRAÇÃO: CALLBACK FUNCTION ===');
+            logToPage('');
+            logToPage('🔄 Função que recebe callback como parâmetro:');
+            logToPage('const executarOperacao = (operacao, callback) => { ... }');
+            logToPage('');
+            logToPage(`Executando operação: ${operacao}`);
+            
+            if (tarefas.length === 0) {
+                logToPage('❌ Erro: Não há tarefas para processar');
+                return;
+            }
+            
+            // Executa o callback passado como parâmetro
+            callback();
+        };
+        
+        // Callbacks para diferentes operações
+        const callbackRemover = function() {
+            const indice = prompt(`Digite o índice da tarefa a remover (0 a ${tarefas.length - 1}):`);
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= tarefas.length) {
+                logToPage('❌ Índice inválido');
+                return;
+            }
+            
+            const tarefaRemovida = tarefas.splice(indiceNum, 1)[0];
+            logToPage(`🗑️ CALLBACK REMOVER: Tarefa "${tarefaRemovida.nome}" removida`);
+            atualizarStats();
+        };
+        
+        const callbackAtualizar = function() {
+            const indice = prompt(`Digite o índice da tarefa a atualizar (0 a ${tarefas.length - 1}):`);
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= tarefas.length) {
+                logToPage('❌ Índice inválido');
+                return;
+            }
+            
+            const novoNome = prompt(`Nome atual: "${tarefas[indiceNum].nome}"\nDigite o novo nome:`);
+            if (novoNome && novoNome.trim() !== '') {
+                const nomeAntigo = tarefas[indiceNum].nome;
+                tarefas[indiceNum].nome = novoNome.trim();
+                logToPage(`✏️ CALLBACK ATUALIZAR: "${nomeAntigo}" → "${novoNome}"`);
+            }
+        };
+        
+        const callbackConcluir = function() {
+            const indice = prompt(`Digite o índice da tarefa a concluir (0 a ${tarefas.length - 1}):`);
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= tarefas.length) {
+                logToPage('❌ Índice inválido');
+                return;
+            }
+            
+            if (tarefas[indiceNum].status === 'concluida') {
+                logToPage('⚠️ Esta tarefa já está concluída');
+                return;
+            }
+            
+            tarefas[indiceNum].status = 'concluida';
+            logToPage(`✅ CALLBACK CONCLUIR: Tarefa "${tarefas[indiceNum].nome}" marcada como concluída`);
+            atualizarStats();
+        };
+        
+        function demonstrarCallback() {
+            clearPageConsole();
+            
+            if (tarefas.length === 0) {
+                logToPage('❌ Adicione algumas tarefas primeiro!');
+                return;
+            }
+            
+            // Primeiro lista as tarefas
+            listarTarefas();
+            logToPage('');
+            
+            const operacao = prompt(`
+Escolha uma operação:
+1 - Remover tarefa
+2 - Atualizar tarefa  
+3 - Concluir tarefa
+
+Digite o número:`);
+            
+            switch(operacao) {
+                case '1':
+                    executarOperacao('REMOVER', callbackRemover);
+                    break;
+                case '2':
+                    executarOperacao('ATUALIZAR', callbackAtualizar);
+                    break;
+                case '3':
+                    executarOperacao('CONCLUIR', callbackConcluir);
+                    break;
+                default:
+                    logToPage('❌ Operação inválida');
+            }
+        }
+        
+        // ==============================================
+        // 4. MODO INTERATIVO COMPLETO
+        // ==============================================
+        
+        function iniciarModoInterativo() {
+            clearPageConsole();
+            logToPage('🚀 INICIANDO MODO INTERATIVO COMPLETO');
+            logToPage('Combinando todos os tipos de funções...');
+            logToPage('');
+            
+            // Função anônima para o menu
+            const mostrarMenu = function() {
+                return prompt(`
+🔧 GERENCIADOR DE TAREFAS - MODO INTERATIVO
+
+Escolha uma opção:
+1 - Adicionar tarefa (Função Anônima)
+2 - Listar tarefas (Arrow Function)
+3 - Operações com callbacks (Remover/Atualizar/Concluir)
+4 - Estatísticas detalhadas
+5 - Limpar todas as tarefas
+6 - Sair
+
+Digite o número da opção:`);
+            };
+            
+            // Arrow function para estatísticas
+            const mostrarEstatisticas = () => {
+                logToPage('📊 ESTATÍSTICAS DETALHADAS:');
+                logToPage('============================');
+                logToPage(`Total de tarefas: ${tarefas.length}`);
+                logToPage(`Tarefas pendentes: ${tarefas.filter(t => t.status === 'pendente').length}`);
+                logToPage(`Tarefas concluídas: ${tarefas.filter(t => t.status === 'concluida').length}`);
+                
+                if (tarefas.length > 0) {
+                    logToPage('');
+                    logToPage('Detalhes das tarefas:');
+                    tarefas.forEach((tarefa, index) => {
+                        logToPage(`  ${index}: ${tarefa.nome} - ${tarefa.status} (Criada: ${tarefa.criadaEm})`);
+                    });
+                }
+            };
+            
+            // Loop principal do modo interativo
+            let continuar = true;
+            while (continuar) {
+                const opcao = mostrarMenu();
+                
+                if (opcao === null) {
+                    continuar = false;
+                    break;
+                }
+                
+                switch(opcao) {
+                    case '1':
+                        const nomeTarefa = prompt('Digite o nome da nova tarefa:');
+                        if (nomeTarefa !== null) {
+                            adicionarTarefa(nomeTarefa);
+                        }
+                        break;
+                        
+                    case '2':
+                        listarTarefas();
+                        break;
+                        
+                    case '3':
+                        if (tarefas.length === 0) {
+                            alert('Não há tarefas para processar!');
+                            break;
+                        }
+                        
+                        // Mostra as tarefas primeiro
+                        let listaTarefas = 'Tarefas atuais:\n';
+                        tarefas.forEach((tarefa, index) => {
+                            listaTarefas += `${index}: ${tarefa.nome} (${tarefa.status})\n`;
+                        });
+                        alert(listaTarefas);
+                        
+                        const tipoOperacao = prompt(`
+Escolha a operação:
+1 - Remover
+2 - Atualizar
+3 - Concluir
+
+Digite o número:`);
+                        
+                        switch(tipoOperacao) {
+                            case '1':
+                                executarOperacao('REMOVER', callbackRemover);
+                                break;
+                            case '2':
+                                executarOperacao('ATUALIZAR', callbackAtualizar);
+                                break;
+                            case '3':
+                                executarOperacao('CONCLUIR', callbackConcluir);
+                                break;
+                        }
+                        break;
+                        
+                    case '4':
+                        mostrarEstatisticas();
+                        break;
+                        
+                    case '5':
+                        if (tarefas.length > 0) {
+                            const confirmar = confirm(`Tem certeza que deseja limpar todas as ${tarefas.length} tarefas?`);
+                            if (confirmar) {
+                                tarefas = [];
+                                logToPage('🧹 Todas as tarefas foram removidas');
+                                atualizarStats();
+                            }
+                        } else {
+                            alert('Não há tarefas para limpar!');
+                        }
+                        break;
+                        
+                    case '6':
+                        continuar = false;
+                        logToPage('👋 Saindo do modo interativo...');
+                        break;
+                        
+                    default:
+                        alert('Opção inválida! Escolha um número entre 1 e 6.');
+                }
+            }
+            
+            logToPage('✨ Modo interativo finalizado');
+        }
+        
+        // Inicialização quando a página carrega
+        window.onload = function() {
+            atualizarStats();
+            demonstrarConceitos();
+            
+            // Adiciona algumas tarefas de exemplo usando diferentes tipos de função
+            
+            console.log('=== GERENCIADOR DE TAREFAS CARREGADO ===');
+            console.log('Tipos de função demonstrados:');
+            console.log('- Funções Anônimas: function() { ... }');
+            console.log('- Arrow Functions: () => { ... }');
+            console.log('- Callback Functions: Funções passadas como parâmetro');
+        };
+    </script>
+</body>
+</html>
