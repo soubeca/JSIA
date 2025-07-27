@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        console.log("=== Sistema de Classificação de Usuário ===\n");
+
+        let idade = parseInt(prompt("Digite sua idade:"));
+        let status = prompt("Digite seu status (registrado ou não registrado):").toLowerCase();
+
+        if (isNaN(idade) || idade < 0) {
+            console.log("Idade inválida!");
+        } else {
+
+            let maioridade = idade >= 18 ? "maior de idade" : "menor de idade";
+            console.log(`Usuário é ${maioridade} (${idade} anos)`);
+
+            switch (status) {
+                case "registrado":
+                    console.log("Bem-vindo! Seu registro está ativo.");
+                    break;
+                case "não registrado":
+                case "nao registrado":
+                    console.log("Por favor, complete seu registro para continuar.");
+                    break;
+                default:
+                    console.log("Status desconhecido.");
+            }
+
+            if (idade >= 18 && (status === "registrado")) {
+                console.log("ACESSO COMPLETO: Você tem acesso a todas as funcionalidades.");
+            } else if (idade < 18 || status !== "registrado") {
+                console.log("ACESSO LIMITADO: Algumas funcionalidades podem estar restritas.");
+            }
+
+            console.log("\n=== Resumo ===");
+            console.log(`Idade: ${idade} anos (${maioridade})`);
+            console.log(`Status: ${status}`);
+            console.log(`Nível de acesso: ${(idade >= 18 && status === "registrado") ? "Completo" : "Limitado"}`);
+        }
+    </script>
+</body>
+</html>
