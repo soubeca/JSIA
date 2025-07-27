@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Lista de Compras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button.remove {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        button.update {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        button.clear {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        .lista-container {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+        }
+        .lista-titulo {
+            color: #495057;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .item-lista {
+            background-color: white;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-info {
+            font-size: 16px;
+            color: #333;
+        }
+        .item-index {
+            background-color: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .lista-vazia {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+        .status {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status.sucesso {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.erro {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .stats {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Gerenciador de Lista de Compras</h1>
+        
+        <div class="stats">
+            <span id="totalItens">Total de itens: 0</span>
+        </div>
+        
+        <div class="controls">
+            <button onclick="adicionarItem()">➕ Adicionar Item</button>
+            <button class="remove" onclick="removerItem()">🗑️ Remover Item</button>
+            <button class="update" onclick="atualizarItem()">✏️ Atualizar Item</button>
+            <button class="clear" onclick="limparLista()">🧹 Limpar Lista</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="lista-container">
+            <div class="lista-titulo">📝 Sua Lista de Compras</div>
+            <div id="listaCompras">
+                <div class="lista-vazia">Sua lista está vazia. Adicione alguns itens!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let listaCompras = [];
+        
+        function mostrarStatus(mensagem, tipo = 'sucesso') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = mensagem;
+            statusDiv.className = `status ${tipo}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        function atualizarStats() {
+            document.getElementById('totalItens').textContent = `Total de itens: ${listaCompras.length}`;
+        }
+        
+        function adicionarItem() {
+            const item = prompt("Digite o item que deseja adicionar à lista:");
+            
+            if (item === null) {
+                return;
+            }
+            
+            if (item.trim() === "") {
+                mostrarStatus("Por favor, digite um item válido!", "erro");
+                return;
+            }
+            
+            const itemExistente = listaCompras.find(i => i.toLowerCase() === item.trim().toLowerCase());
+            if (itemExistente) {
+                mostrarStatus("Este item já está na sua lista!", "erro");
+                return;
+            }
+            
+            listaCompras.push(item.trim());
+            mostrarStatus(`"${item.trim()}" foi adicionado à lista!`);
+            
+            exibirLista();
+            atualizarStats();
+            
+            console.log("Item adicionado:", item.trim());
+            console.log("Lista atual:", listaCompras);
+        }
+        
+        function removerItem() {
+            if (listaCompras.length === 0) {
+                mostrarStatus("A lista está vazia! Não há itens para remover.", "erro");
+                return;
+            }
+            
+            const indice = prompt(`Digite o índice do item a ser removido (0 a ${listaCompras.length - 1}):`);
+            
+            if (indice === null) {
+                return;
+            }
+            
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= listaCompras.length) {
+                mostrarStatus(`Índice inválido! Use um número entre 0 e ${listaCompras.length - 1}.`, "erro");
+                return;
+            }
+            
+            const itemRemovido = listaCompras.splice(indiceNum, 1)[0];
+            mostrarStatus(`"${itemRemovido}" foi removido da lista!`);
+            
+            exibirLista();
+            atualizarStats();
+            
+            console.log("Item removido:", itemRemovido);
+            console.log("Lista atual:", listaCompras);
+        }
+        
+        function atualizarItem() {
+            if (listaCompras.length === 0) {
+                mostrarStatus("A lista está vazia! Não há itens para atualizar.", "erro");
+                return;
+            }
+            
+            const indice = prompt(`Digite o índice do item a ser atualizado (0 a ${listaCompras.length - 1}):`);
+            
+            if (indice === null) {
+                return;
+            }
+            
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= listaCompras.length) {
+                mostrarStatus(`Índice inválido! Use um número entre 0 e ${listaCompras.length - 1}.`, "erro");
+                return;
+            }
+            
+            const itemAtual = listaCompras[indiceNum];
+            const novoItem = prompt(`Item atual: "${itemAtual}"\nDigite o novo valor:`);
+            
+            if (novoItem === null) {
+                return;
+            }
+            
+            if (novoItem.trim() === "") {
+                mostrarStatus("Por favor, digite um item válido!", "erro");
+                return;
+            }
+            
+            const itemExistente = listaCompras.find((item, index) => 
+                item.toLowerCase() === novoItem.trim().toLowerCase() && index !== indiceNum
+            );
+            
+            if (itemExistente) {
+                mostrarStatus("Este item já está na sua lista!", "erro");
+                return;
+            }
+            
+            listaCompras[indiceNum] = novoItem.trim();
+            mostrarStatus(`Item atualizado de "${itemAtual}" para "${novoItem.trim()}"!`);
+            
+            exibirLista();
+            
+            console.log("Item atualizado:", { anterior: itemAtual, novo: novoItem.trim() });
+            console.log("Lista atual:", listaCompras);
+        }
+        
+        function exibirLista() {
+            const listaDiv = document.getElementById('listaCompras');
+
+            if (listaCompras.length === 0) {
+                listaDiv.innerHTML = '<div class="lista-vazia">Sua lista está vazia. Adicione alguns itens!</div>';
+                return;
+            }
+            
+            let html = '';
+            let indice = 0;
+            
+            for (let item of listaCompras) {
+                html += `
+                    <div class="item-lista">
+                        <span class="item-info">${item}</span>
+                        <span class="item-index">${indice}</span>
+                    </div>
+                `;
+                indice++;
+            }
+            
+            listaDiv.innerHTML = html;
+            
+            console.log("=== EXIBINDO LISTA COMPLETA ===");
+            let contador = 0;
+            for (let item of listaCompras) {
+                console.log(`${contador}: ${item}`);
+                contador++;
+            }
+        }
+        
+        function limparLista() {
+            if (listaCompras.length === 0) {
+                mostrarStatus("A lista já está vazia!", "erro");
+                return;
+            }
+            
+            const confirmacao = confirm(`Tem certeza que deseja limpar toda a lista? (${listaCompras.length} itens serão removidos)`);
+            
+            if (confirmacao) {
+                const totalItens = listaCompras.length;
+                listaCompras = [];
+                mostrarStatus(`Lista limpa! ${totalItens} itens foram removidos.`);
+                exibirLista();
+                atualizarStats();
+                
+                console.log("Lista foi completamente limpa");
+            }
+        }
+
+        function demonstrarMetodos() {
+            console.log("=== DEMONSTRAÇÃO DE MÉTODOS DE ARRAY ===");
+            
+            let exemploArray = ["Pão", "Leite", "Ovos"];
+            console.log("Array inicial:", exemploArray);
+            
+            exemploArray.push("Queijo");
+            console.log("Após push('Queijo'):", exemploArray);
+            
+            let itemRemovido = exemploArray.splice(1, 1);
+            console.log("Após splice(1, 1):", exemploArray);
+            console.log("Item removido:", itemRemovido);
+            
+            console.log("Usando for...of:");
+            for (let item of exemploArray) {
+                console.log(`- ${item}`);
+            }
+        }
+        
+        window.onload = function() {
+            exibirLista();
+            atualizarStats();
+            demonstrarMetodos();
+            
+            console.log("=== PROGRAMA INICIADO ===");
+            console.log("Use os botões da interface para gerenciar sua lista de compras!");
+        };
+    </script>
+</body>
+</html>
