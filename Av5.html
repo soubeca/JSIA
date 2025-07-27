@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Lista de Tarefas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .btn-adicionar {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .btn-listar {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+        .btn-remover {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+        .btn-concluir {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+        .btn-interativo {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        .btn-limpar {
+            background: linear-gradient(45deg, #607D8B, #455A64);
+            color: white;
+        }
+        .stats {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        .tarefas-container {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            min-height: 300px;
+        }
+        .tarefas-titulo {
+            color: #495057;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        .tarefa-item {
+            background-color: white;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        .tarefa-item:hover {
+            transform: translateX(5px);
+        }
+        .tarefa-item.concluida {
+            background: linear-gradient(45deg, #d4edda, #c3e6cb);
+            opacity: 0.8;
+        }
+        .tarefa-info {
+            font-size: 16px;
+            color: #333;
+            flex-grow: 1;
+        }
+        .tarefa-info.concluida {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .tarefa-index {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+        .lista-vazia {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 60px;
+            font-size: 18px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .status.sucesso {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.erro {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .modo-interativo {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Gerenciador de Lista de Tarefas</h1>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalTarefas">0</span>
+                <span>Total de Tarefas</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="tarefasPendentes">0</span>
+                <span>Pendentes</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="tarefasConcluidas">0</span>
+                <span>Concluídas</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-adicionar" onclick="adicionarTarefa()">➕ Adicionar Tarefa</button>
+            <button class="btn-remover" onclick="removerTarefa()">🗑️ Remover Tarefa</button>
+            <button class="btn-concluir" onclick="concluirTarefa()">✅ Concluir Tarefa</button>
+            <button class="btn-limpar" onclick="limparTarefas()">🧹 Limpar Todas</button>
+            <button class="btn-interativo" onclick="iniciarModoInterativo()">🚀 Modo Interativo (While Loop)</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="tarefas-container">
+            <div class="tarefas-titulo">📌 Suas Tarefas</div>
+            <div id="listaTarefas">
+                <div class="lista-vazia">Nenhuma tarefa adicionada ainda. Comece criando uma!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tarefas = [];
+        
+        function mostrarStatus(mensagem, tipo = 'sucesso') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = mensagem;
+            statusDiv.className = `status ${tipo}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 4000);
+        }
+        
+        function atualizarStats() {
+            const total = tarefas.length;
+            let concluidas = 0;
+            
+            for (let tarefa of tarefas) {
+                if (tarefa.startsWith('✅')) {
+                    concluidas++;
+                }
+            }
+            
+            const pendentes = total - concluidas;
+            
+            document.getElementById('totalTarefas').textContent = total;
+            document.getElementById('tarefasPendentes').textContent = pendentes;
+            document.getElementById('tarefasConcluidas').textContent = concluidas;
+        }
+        
+        function adicionarTarefa() {
+            const tarefa = prompt("Digite a nova tarefa:");
+            
+            if (tarefa === null) {
+                return;
+            }
+            
+            if (tarefa.trim() === "") {
+                mostrarStatus("Por favor, digite uma tarefa válida!", "erro");
+                return;
+            }
+            
+            const tarefaExistente = tarefas.find(t => 
+                t.toLowerCase().replace('✅ ', '') === tarefa.trim().toLowerCase()
+            );
+            
+            if (tarefaExistente) {
+                mostrarStatus("Esta tarefa já existe na sua lista!", "erro");
+                return;
+            }
+            
+            tarefas.push(tarefa.trim());
+            mostrarStatus(`Tarefa "${tarefa.trim()}" adicionada com sucesso!`);
+            
+            listarTarefas();
+            atualizarStats();
+            
+            console.log("Tarefa adicionada:", tarefa.trim());
+            console.log("Array atual:", tarefas);
+        }
+        
+        function listarTarefas() {
+            const listaDiv = document.getElementById('listaTarefas');
+            
+            if (tarefas.length === 0) {
+                listaDiv.innerHTML = '<div class="lista-vazia">Nenhuma tarefa adicionada ainda. Comece criando uma!</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            for (let i = 0; i < tarefas.length; i++) {
+                const tarefa = tarefas[i];
+                const isConcluida = tarefa.startsWith('✅');
+                
+                html += `
+                    <div class="tarefa-item ${isConcluida ? 'concluida' : ''}">
+                        <span class="tarefa-info ${isConcluida ? 'concluida' : ''}">${tarefa}</span>
+                        <span class="tarefa-index">${i}</span>
+                    </div>
+                `;
+            }
+            
+            listaDiv.innerHTML = html;
+            
+            console.log("=== LISTANDO TAREFAS (for...of) ===");
+            let indice = 0;
+            for (let tarefa of tarefas) {
+                console.log(`${indice}: ${tarefa}`);
+                indice++;
+            }
+            
+            mostrarStatus(`${tarefas.length} tarefa(s) exibida(s).`, "info");
+        }
+        
+        function removerTarefa() {
+            if (tarefas.length === 0) {
+                mostrarStatus("Não há tarefas para remover!", "erro");
+                return;
+            }
+            
+            const indice = prompt(`Digite o índice da tarefa a ser removida (0 a ${tarefas.length - 1}):`);
+            
+            if (indice === null) {
+                return;
+            }
+            
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= tarefas.length) {
+                mostrarStatus(`Índice inválido! Use um número entre 0 e ${tarefas.length - 1}.`, "erro");
+                return;
+            }
+            
+            const tarefaRemovida = tarefas.splice(indiceNum, 1)[0];
+            mostrarStatus(`Tarefa "${tarefaRemovida}" removida com sucesso!`);
+            
+            listarTarefas();
+            atualizarStats();
+            
+            console.log("Tarefa removida:", tarefaRemovida);
+            console.log("Array atual:", tarefas);
+        }
+        
+        function concluirTarefa() {
+            if (tarefas.length === 0) {
+                mostrarStatus("Não há tarefas para concluir!", "erro");
+                return;
+            }
+            
+            const indice = prompt(`Digite o índice da tarefa a ser concluída (0 a ${tarefas.length - 1}):`);
+            
+            if (indice === null) {
+                return;
+            }
+            
+            const indiceNum = parseInt(indice);
+            
+            if (isNaN(indiceNum) || indiceNum < 0 || indiceNum >= tarefas.length) {
+                mostrarStatus(`Índice inválido! Use um número entre 0 e ${tarefas.length - 1}.`, "erro");
+                return;
+            }
+            
+            if (tarefas[indiceNum].startsWith('✅')) {
+                mostrarStatus("Esta tarefa já está concluída!", "erro");
+                return;
+            }
+            
+            const tarefaOriginal = tarefas[indiceNum];
+            tarefas[indiceNum] = `✅ ${tarefaOriginal}`;
+            
+            mostrarStatus(`Tarefa "${tarefaOriginal}" marcada como concluída!`);
+            
+            listarTarefas();
+            atualizarStats();
+            
+            console.log("Tarefa concluída:", tarefas[indiceNum]);
+        }
+        
+        function limparTarefas() {
+            if (tarefas.length === 0) {
+                mostrarStatus("A lista já está vazia!", "erro");
+                return;
+            }
+            
+            const confirmacao = confirm(`Tem certeza que deseja remover todas as ${tarefas.length} tarefas?`);
+            
+            if (confirmacao) {
+                const totalRemovidas = tarefas.length;
+                tarefas = [];
+                mostrarStatus(`${totalRemovidas} tarefa(s) removida(s) com sucesso!`);
+                listarTarefas();
+                atualizarStats();
+                
+                console.log("Todas as tarefas foram removidas");
+            }
+        }
+        
+        function iniciarModoInterativo() {
+            mostrarStatus("Iniciando modo interativo... Verifique os prompts!", "info");
+            
+            while (true) {
+                const opcao = prompt(`
+🚀 MODO INTERATIVO - GERENCIADOR DE TAREFAS
+
+Escolha uma opção:
+1 - Adicionar tarefa
+2 - Listar tarefas
+3 - Remover tarefa
+4 - Concluir tarefa
+5 - Limpar todas as tarefas
+6 - Sair do modo interativo
+
+Digite o número da opção desejada:`);
+                
+                if (opcao === null) {
+                    break;
+                }
+                
+                const opcaoNum = parseInt(opcao);
+                
+                switch (opcaoNum) {
+                    case 1:
+                        adicionarTarefaInterativo();
+                        break;
+                    case 2:
+                        listarTarefasInterativo();
+                        break;
+                    case 3:
+                        removerTarefaInterativo();
+                        break;
+                    case 4:
+                        concluirTarefaInterativo();
+                        break;
+                    case 5:
+                        limparTarefasInterativo();
+                        break;
+                    case 6:
+                        alert("Saindo do modo interativo...");
+                        mostrarStatus("Modo interativo finalizado!", "info");
+                        return;
+                    default:
+                        alert("Opção inválida! Escolha um número entre 1 e 6.");
+                        break;
+                }
+            }
+        }
+        
+        function adicionarTarefaInterativo() {
+            const tarefa = prompt("Digite a nova tarefa:");
+            if (tarefa && tarefa.trim() !== "") {
+                tarefas.push(tarefa.trim());
+                alert(`Tarefa "${tarefa.trim()}" adicionada!`);
+                listarTarefas();
+                atualizarStats();
+            } else if (tarefa !== null) {
+                alert("Tarefa inválida!");
+            }
+        }
+        
+        function listarTarefasInterativo() {
+            if (tarefas.length === 0) {
+                alert("Nenhuma tarefa na lista!");
+                return;
+            }
+            
+            let lista = "📋 SUAS TAREFAS:\n\n";
+            for (let i = 0; i < tarefas.length; i++) {
+                lista += `${i}: ${tarefas[i]}\n`;
+            }
+            
+            alert(lista);
+        }
+        
+        function removerTarefaInterativo() {
+            if (tarefas.length === 0) {
+                alert("Não há tarefas para remover!");
+                return;
+            }
+            
+            const indice = prompt(`Digite o índice da tarefa (0 a ${tarefas.length - 1}):`);
+            const indiceNum = parseInt(indice);
+            
+            if (!isNaN(indiceNum) && indiceNum >= 0 && indiceNum < tarefas.length) {
+                const tarefaRemovida = tarefas.splice(indiceNum, 1)[0];
+                alert(`Tarefa "${tarefaRemovida}" removida!`);
+                listarTarefas();
+                atualizarStats();
+            } else if (indice !== null) {
+                alert("Índice inválido!");
+            }
+        }
+        
+        function concluirTarefaInterativo() {
+            if (tarefas.length === 0) {
+                alert("Não há tarefas para concluir!");
+                return;
+            }
+            
+            const indice = prompt(`Digite o índice da tarefa (0 a ${tarefas.length - 1}):`);
+            const indiceNum = parseInt(indice);
+            
+            if (!isNaN(indiceNum) && indiceNum >= 0 && indiceNum < tarefas.length) {
+                if (!tarefas[indiceNum].startsWith('✅')) {
+                    const tarefaOriginal = tarefas[indiceNum];
+                    tarefas[indiceNum] = `✅ ${tarefaOriginal}`;
+                    alert(`Tarefa "${tarefaOriginal}" concluída!`);
+                    listarTarefas();
+                    atualizarStats();
+                } else {
+                    alert("Esta tarefa já está concluída!");
+                }
+            } else if (indice !== null) {
+                alert("Índice inválido!");
+            }
+        }
+        
+        function limparTarefasInterativo() {
+            if (tarefas.length === 0) {
+                alert("A lista já está vazia!");
+                return;
+            }
+            
+            const confirmacao = confirm(`Remover todas as ${tarefas.length} tarefas?`);
+            if (confirmacao) {
+                const total = tarefas.length;
+                tarefas = [];
+                alert(`${total} tarefa(s) removida(s)!`);
+                listarTarefas();
+                atualizarStats();
+            }
+        }
+        
+        window.onload = function() {
+            listarTarefas();
+            atualizarStats();
+            
+            console.log("=== GERENCIADOR DE TAREFAS INICIADO ===");
+            console.log("Demonstração dos loops utilizados:");
+            console.log("- while (true): Modo interativo contínuo");
+            console.log("- for: Listagem com índices");
+            console.log("- for...of: Percorrimento simples dos elementos");
+            console.log("- push(): Adicionar elementos ao final do array");
+            console.log("- splice(): Remover elementos por índice");
+        };
+    </script>
+</body>
+</html>
