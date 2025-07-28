@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Cadastro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+
+        .btn-reset {
+            background-color: #f44336;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-reset:hover {
+            background-color: #da190b;
+        }
+
+        .usuarios-lista {
+            margin-top: 40px;
+        }
+
+        .usuario-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .usuario-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 16px;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Formulário de Cadastro</h1>
+        
+        <form id="cadastroForm">
+            <div class="form-group">
+                <label for="nomeUsuario">Nome de Usuário:</label>
+                <input type="text" id="nomeUsuario" name="nomeUsuario" required>
+                <div class="error-message" id="errorNome">Por favor, preencha o nome de usuário.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" name="senha" required>
+                <div class="error-message" id="errorSenha">Por favor, preencha a senha.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone">Telefone:</label>
+                <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                <div class="error-message" id="errorTelefone">Por favor, preencha o telefone.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="dataNascimento">Data de Nascimento:</label>
+                <input type="date" id="dataNascimento" name="dataNascimento" required>
+                <div class="error-message" id="errorData">Por favor, preencha a data de nascimento.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required>
+                <div class="error-message" id="errorEmail">Por favor, preencha um e-mail válido.</div>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-submit">Cadastrar Usuário</button>
+                <button type="button" class="btn-reset" id="limparListaBtn">Limpar Lista</button>
+            </div>
+        </form>
+
+        <div class="usuarios-lista">
+            <h2>Usuários Cadastrados</h2>
+            <div id="listaUsuarios">
+                <div class="empty-state">
+                    Nenhum usuário cadastrado ainda. Preencha o formulário acima para adicionar o primeiro usuário!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Seletores dos elementos DOM
+        const cadastroForm = document.getElementById('cadastroForm');
+        const listaUsuarios = document.getElementById('listaUsuarios');
+        const limparListaBtn = document.getElementById('limparListaBtn');
+
+        // Campos do formulário
+        const nomeUsuario = document.getElementById('nomeUsuario');
+        const senha = document.getElementById('senha');
+        const telefone = document.getElementById('telefone');
+        const dataNascimento = document.getElementById('dataNascimento');
+        const email = document.getElementById('email');
+
+        // Elementos de erro
+        const errorNome = document.getElementById('errorNome');
+        const errorSenha = document.getElementById('errorSenha');
+        const errorTelefone = document.getElementById('errorTelefone');
+        const errorData = document.getElementById('errorData');
+        const errorEmail = document.getElementById('errorEmail');
+
+        // Função para limpar mensagens de erro
+        function limparErros() {
+            const errors = document.querySelectorAll('.error-message');
+            errors.forEach(error => {
+                error.style.display = 'none';
+            });
+        }
+
+        function validarFormulario() {
+            limparErros();
+            let isValid = true;
+          
+            if (nomeUsuario.value.trim() === '') {
+                errorNome.style.display = 'block';
+                console.error('Erro: Nome de usuário não preenchido');
+                isValid = false;
+            }
+
+            if (senha.value.trim() === '') {
+                errorSenha.style.display = 'block';
+                console.error('Erro: Senha não preenchida');
+                isValid = false;
+            }
+
+            if (telefone.value.trim() === '') {
+                errorTelefone.style.display = 'block';
+                console.error('Erro: Telefone não preenchido');
+                isValid = false;
+            }
+
+            if (dataNascimento.value.trim() === '') {
+                errorData.style.display = 'block';
+                console.error('Erro: Data de nascimento não preenchida');
+                isValid = false;
+            }
+
+            if (email.value.trim() === '') {
+                errorEmail.style.display = 'block';
+                console.error('Erro: E-mail não preenchido');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function formatarData(data) {
+            const dataObj = new Date(data);
+            return dataObj.toLocaleDateString('pt-BR');
+        }
+
+        function criarCardUsuario(dados) {
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const usuarioCard = document.createElement('div');
+            usuarioCard.className = 'usuario-card';
+
+            usuarioCard.innerHTML = `
+                <div class="usuario-info">
+                    <div class="info-item">
+                        <span class="info-label">Nome de Usuário:</span>
+                        <span class="info-value">${dados.nome}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">E-mail:</span>
+                        <span class="info-value">${dados.email}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Telefone:</span>
+                        <span class="info-value">${dados.telefone}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Data de Nascimento:</span>
+                        <span class="info-value">${formatarData(dados.dataNascimento)}</span>
+                    </div>
+                </div>
+            `;
+
+            listaUsuarios.appendChild(usuarioCard);
+        }
+
+        cadastroForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            console.log('Formulário enviado - preventDefault() aplicado');
+
+            if (validarFormulario()) {
+                const dadosUsuario = {
+                    nome: nomeUsuario.value.trim(),
+                    email: email.value.trim(),
+                    telefone: telefone.value.trim(),
+                    dataNascimento: dataNascimento.value
+                };
+
+                console.log('Dados válidos:', dadosUsuario);
+
+                criarCardUsuario(dadosUsuario);
+
+                cadastroForm.reset();
+                limparErros();
+
+                console.log('Usuário adicionado com sucesso!');
+            } else {
+                console.log('Formulário contém erros - envio cancelado');
+            }
+        });
+
+        limparListaBtn.addEventListener('click', function() {
+            listaUsuarios.innerHTML = `
+                <div class="empty-state">
+                    Lista limpa! Adicione novos usuários usando o formulário acima.
+                </div>
+            `;
+            console.log('Lista de usuários limpa');
+        });
+
+        [nomeUsuario, senha, telefone, dataNascimento, email].forEach(campo => {
+            campo.addEventListener('input', limparErros);
+        });
+    </script>
+</body>
+</html>
