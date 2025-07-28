@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Notas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+
+        #tituloNota {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #tituloNota:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .btn-adicionar {
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-adicionar:hover {
+            background-color: #45a049;
+        }
+
+        .notas-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .notas-lista {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nota-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            transition: background-color 0.3s;
+        }
+
+        .nota-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .nota-titulo {
+            font-size: 16px;
+            color: #333;
+            flex: 1;
+        }
+
+        .nota-data {
+            font-size: 12px;
+            color: #666;
+            margin-right: 15px;
+        }
+
+        .btn-remover {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-remover:hover {
+            background-color: #da190b;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .contador-notas {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .btn-limpar-todas {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-limpar-todas:hover {
+            background-color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Gerenciador de Notas</h1>
+        
+        <div class="input-section">
+            <input type="text" id="tituloNota" placeholder="Digite o título da sua nota..." maxlength="100">
+            <button class="btn-adicionar" id="adicionarNotaBtn">Adicionar Nota</button>
+        </div>
+
+        <div class="notas-section">
+            <h2>Minhas Notas</h2>
+            <div class="contador-notas" id="contadorNotas">0 notas armazenadas</div>
+            
+            <ul class="notas-lista" id="listanotas">
+            </ul>
+
+            <button class="btn-limpar-todas" id="limparTodasBtn" style="display: none;">
+                Limpar Todas as Notas
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const tituloNota = document.getElementById('tituloNota');
+        const adicionarNotaBtn = document.getElementById('adicionarNotaBtn');
+        const listaNotas = document.getElementById('listanotas');
+        const contadorNotas = document.getElementById('contadorNotas');
+        const limparTodasBtn = document.getElementById('limparTodasBtn');
+
+        const STORAGE_KEY = 'gerenciador_notas';
+
+        function gerarId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function carregarNotas() {
+            try {
+                const notasString = localStorage.getItem(STORAGE_KEY);
+                return notasString ? JSON.parse(notasString) : [];
+            } catch (error) {
+                console.error('Erro ao carregar notas do Local Storage:', error);
+                return [];
+            }
+        }
+
+        function salvarNotas(notas) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(notas));
+                console.log('Notas salvas no Local Storage:', notas);
+            } catch (error) {
+                console.error('Erro ao salvar notas no Local Storage:', error);
+                alert('Erro ao salvar nota. Verifique se há espaço disponível no navegador.');
+            }
+        }
+
+        function formatarData(timestamp) {
+            const data = new Date(timestamp);
+            return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function atualizarContador(quantidade) {
+            contadorNotas.textContent = `${quantidade} nota${quantidade !== 1 ? 's' : ''} armazenada${quantidade !== 1 ? 's' : ''}`;
+            
+            if (quantidade > 0) {
+                limparTodasBtn.style.display = 'block';
+            } else {
+                limparTodasBtn.style.display = 'none';
+            }
+        }
+
+        function renderizarNotas() {
+            const notas = carregarNotas();
+            listaNotas.innerHTML = '';
+
+            if (notas.length === 0) {
+                listaNotas.innerHTML = `
+                    <li class="empty-state">
+                        Nenhuma nota encontrada. Adicione sua primeira nota usando o campo acima!
+                    </li>
+                `;
+                atualizarContador(0);
+                return;
+            }
+
+            notas.sort((a, b) => b.dataCriacao - a.dataCriacao);
+
+            notas.forEach(nota => {
+                const notaItem = document.createElement('li');
+                notaItem.className = 'nota-item';
+                
+                notaItem.innerHTML = `
+                    <div class="nota-titulo">${nota.titulo}</div>
+                    <div class="nota-data">${formatarData(nota.dataCriacao)}</div>
+                    <button class="btn-remover" data-id="${nota.id}">Remover</button>
+                `;
+
+                listaNotas.appendChild(notaItem);
+            });
+
+            atualizarContador(notas.length);
+        }
+
+        function adicionarNota() {
+            const titulo = tituloNota.value.trim();
+
+            if (titulo === '') {
+                alert('Por favor, digite um título para a nota!');
+                tituloNota.focus();
+                return;
+            }
+
+            const notasExistentes = carregarNotas();
+            const tituloExiste = notasExistentes.some(nota => 
+                nota.titulo.toLowerCase() === titulo.toLowerCase()
+            );
+
+            if (tituloExiste) {
+                alert('Já existe uma nota com este título! Por favor, escolha um título diferente.');
+                tituloNota.focus();
+                return;
+            }
+
+            const novaNota = {
+                id: gerarId(),
+                titulo: titulo,
+                dataCriacao: Date.now()
+            };
+
+            notasExistentes.push(novaNota);
+
+            salvarNotas(notasExistentes);
+
+            tituloNota.value = '';
+            tituloNota.focus();
+
+            renderizarNotas();
+
+            console.log('Nova nota adicionada:', novaNota);
+        }
+
+        function removerNota(idNota) {
+            if (!confirm('Tem certeza que deseja remover esta nota?')) {
+                return;
+            }
+
+            const notas = carregarNotas();
+            const notasAtualizadas = notas.filter(nota => nota.id !== idNota);
+
+            salvarNotas(notasAtualizadas);
+
+            renderizarNotas();
+
+            console.log('Nota removida, ID:', idNota);
+        }
+
+        function limparTodasNotas() {
+            if (!confirm('Tem certeza que deseja remover TODAS as notas? Esta ação não pode ser desfeita!')) {
+                return;
+            }
+
+            localStorage.removeItem(STORAGE_KEY);
+            renderizarNotas();
+            console.log('Todas as notas foram removidas');
+        }
+
+        adicionarNotaBtn.addEventListener('click', adicionarNota);
+
+        tituloNota.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adicionarNota();
+            }
+        });
+
+        listaNotas.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-remover')) {
+                const idNota = e.target.getAttribute('data-id');
+                removerNota(idNota);
+            }
+        });
+
+        limparTodasBtn.addEventListener('click', limparTodasNotas);
+
+        window.addEventListener('load', function() {
+            renderizarNotas();
+            tituloNota.focus();
+            console.log('Gerenciador de Notas inicializado');
+        });
+    </script>
+</body>
+</html>
