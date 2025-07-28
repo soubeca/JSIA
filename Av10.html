@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Tarefas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #tarefaInput {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #adicionarBtn {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #adicionarBtn:hover {
+            background-color: #45a049;
+        }
+
+        #listaTarefas {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tarefa-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            transition: all 0.3s ease;
+        }
+
+        .tarefa-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .tarefa-texto {
+            flex: 1;
+            cursor: pointer;
+            font-size: 16px;
+            user-select: none;
+        }
+
+        .concluida {
+            text-decoration: line-through;
+            color: #888;
+            opacity: 0.7;
+        }
+
+        .concluida .tarefa-item {
+            border-left-color: #888;
+        }
+
+        .remover-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remover-btn:hover {
+            background-color: #da190b;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Organizador de Tarefas</h1>
+        
+        <div class="input-section">
+            <input type="text" id="tarefaInput" placeholder="Digite uma nova tarefa..." maxlength="100">
+            <button id="adicionarBtn">Adicionar Tarefa</button>
+        </div>
+
+        <ul id="listaTarefas">
+            <li class="empty-message">Nenhuma tarefa adicionada ainda. Comece criando sua primeira tarefa!</li>
+        </ul>
+    </div>
+
+    <script>
+
+        const tarefaInput = document.getElementById('tarefaInput');
+        const adicionarBtn = document.getElementById('adicionarBtn');
+        const listaTarefas = document.getElementById('listaTarefas');
+
+        function adicionarTarefa() {
+            const textoTarefa = tarefaInput.value.trim();
+            
+            if (textoTarefa === '') {
+                alert('Por favor, digite uma tarefa!');
+                return;
+            }
+
+            const emptyMessage = document.querySelector('.empty-message');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const itemTarefa = document.createElement('li');
+            itemTarefa.className = 'tarefa-item';
+
+            const textoSpan = document.createElement('span');
+            textoSpan.className = 'tarefa-texto';
+            textoSpan.textContent = textoTarefa;
+
+            const removerBtn = document.createElement('button');
+            removerBtn.className = 'remover-btn';
+            removerBtn.textContent = 'Remover';
+
+            itemTarefa.appendChild(textoSpan);
+            itemTarefa.appendChild(removerBtn);
+
+            listaTarefas.appendChild(itemTarefa);
+
+            tarefaInput.value = '';
+            tarefaInput.focus();
+
+            textoSpan.addEventListener('click', function() {
+                itemTarefa.classList.toggle('concluida');
+            });
+
+            removerBtn.addEventListener('click', function() {
+                listaTarefas.removeChild(itemTarefa);
+                
+                if (listaTarefas.children.length === 0) {
+                    const emptyMsg = document.createElement('li');
+                    emptyMsg.className = 'empty-message';
+                    emptyMsg.textContent = 'Todas as tarefas foram concluídas! 🎉';
+                    listaTarefas.appendChild(emptyMsg);
+                }
+            });
+        }
+
+        adicionarBtn.addEventListener('click', adicionarTarefa);
+
+        tarefaInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adicionarTarefa();
+            }
+        });
+
+        window.addEventListener('load', function() {
+            tarefaInput.focus();
+        });
+    </script>
+</body>
+</html>
